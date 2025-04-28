@@ -1,0 +1,37 @@
+Sub ConvertirAInlineYAjustarAnchoCompletoPagina()
+    Dim shp As Shape
+    Dim img As InlineShape
+    Dim anchoPagina As Single
+    Dim i As Long
+
+    ' Obtener el ancho total de la página (sin márgenes)
+    anchoPagina = ActiveDocument.PageSetup.PageWidth
+
+    ' Convertir imágenes flotantes a en línea
+    For i = ActiveDocument.Shapes.Count To 1 Step -1
+        Set shp = ActiveDocument.Shapes(i)
+        If shp.Type = msoPicture Then
+            If shp.Height >= CentimetersToPoints(3) And shp.Width >= CentimetersToPoints(3) Then
+                shp.ConvertToInlineShape
+            End If
+        End If
+    Next i
+
+    ' Ajustar todas las imágenes en línea
+    For Each img In ActiveDocument.InlineShapes
+        If img.Type = wdInlineShapePicture Then
+            If img.Height >= CentimetersToPoints(3) And img.Width >= CentimetersToPoints(3) Then
+                img.LockAspectRatio = msoTrue
+                img.Width = anchoPagina
+                
+                ' Insertar salto de párrafo después de la imagen (forma segura)
+                With img
+                    .Range.Select
+                    Selection.Collapse Direction:=wdCollapseEnd
+                    Selection.TypeParagraph
+                End With
+            End If
+        End If
+    Next img
+End Sub
+
